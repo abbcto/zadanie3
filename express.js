@@ -1,36 +1,40 @@
-const express = require('express')
-const app = express()
-const exhbs = require('express-handlebars');
-const path = require('path');
-const multer  = require('multer')
-const upload = multer();
+// express.js
+const express = require('express');
+const app     = express();
+const exhbs   = require('express-handlebars');
+const path    = require('path');
+const multer  = require('multer');
+const upload  = multer().none();
+
 const articleController = require('./controllers/articleController');
 
 app.engine('hbs', exhbs.engine({
-    extname: '.hbs',
-    defaultLayout: 'main',
-    layoutsDir: path.join(__dirname, 'views/layouts')
+  extname: '.hbs',
+  defaultLayout: 'main',
+  layoutsDir: path.join(__dirname, 'views/layouts')
 }));
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.get('/', articleController.showMainPage);
-app.get('/articles/{:id}', articleController.showSingleArticle);
-app.get('/editArticle/{:id}', articleController.showEditArticle);
-app.post('/editArticle', upload.any(), articleController.editArticle);
+// Для парсинга form-data (multipart/form-data без файлов)
+app.use(upload);
 
-app.get('/deleteArticle/{:id}', articleController.deleteArticle);
-app.post('/addArticle', upload.any(), articleController.addArticle);
-app.get('/addArticle', (req, res)=>{res.render('add_article');});
-app.get('/login', (req, res)=>{
-   res.render('login');
-});
-app.post('/login',  upload.any(), (req, res)=>{
-    console.log(req.body.email);
-    console.log(req.body.pass);
-    res.send('ok');
-});
+// Маршруты
+app.get('/',                  articleController.showMainPage);
+app.get('/articles/:id',      articleController.showSingleArticle);
+app.get('/editArticle/:id',   articleController.showEditArticle);
+app.post('/editArticle',      articleController.editArticle);
 
-app.listen(process.env.PORT, () => {
-    console.log(`Example app listening on port ${process.env.PORT}`)
-})
+app.get('/deleteArticle/:id', articleController.deleteArticle);
+
+app.get('/addArticle',        (req, res) => res.render('add_article'));
+app.post('/addArticle',       articleController.addArticle);
+
+app.get('/login', (req, res) => res.render('login'));
+app.post('/login', articleController.login);
+
+// Запуск
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}`)
+});
