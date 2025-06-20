@@ -1,8 +1,37 @@
-<div class="container">
-    <h1>{{article.title}}</h1>
-    <p>{{article.content}}</p>
-    <p>{{article.author}}</p>
-    <hr>
-    <a href="/editArticle/{{article.id}}">[редактировать]</a>
-    <a href="/deleteArticle/{{article.id}}" class="text-danger">[удалить]</a>
+{{!-- views/single_article.hbs --}}
+<h1>{{article.title}}</h1>
+<p>Автор: {{article.author}}, {{article.created_at}}</p>
+<div>
+  {{{article.content}}}
 </div>
+
+<hr>
+<h2>Комментарии</h2>
+{{#if comments.length}}
+  <ul>
+    {{#each comments}}
+      <li>
+        <strong>{{this.author}}</strong>
+        <em>{{this.created_at}}</em>
+        <p>{{this.body}}</p>
+      </li>
+    {{/each}}
+  </ul>
+{{else}}
+  <p>Пока нет комментариев</p>
+{{/if}}
+
+<hr>
+<h3>Оставить комментарий</h3>
+<form action="/comments" method="post" enctype="multipart/form-data">
+  <input type="hidden" name="article_id" value="{{article.id}}">
+  <div>
+    <label>Имя:</label><br>
+    <input type="text" name="author" required>
+  </div>
+  <div>
+    <label>Комментарий:</label><br>
+    <textarea name="body" rows="4" required></textarea>
+  </div>
+  <button type="submit">Отправить</button>
+</form>

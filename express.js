@@ -1,12 +1,14 @@
-// express.js
+// express.js маршрутизатор
 const express = require('express');
 const app     = express();
 const exhbs   = require('express-handlebars');
 const path    = require('path');
 const multer  = require('multer');
 const upload  = multer().none();
-
+//body-parser чтобы любая стандартная форма (без enctype) корректно заполняла req.body
+app.use(express.urlencoded({ extended: true }));  
 const articleController = require('./controllers/articleController');
+const commentController = require('./controllers/commentController');
 
 app.engine('hbs', exhbs.engine({
   extname: '.hbs',
@@ -32,7 +34,8 @@ app.post('/addArticle',       articleController.addArticle);
 
 app.get('/login', (req, res) => res.render('login'));
 app.post('/login', articleController.login);
-
+// Добавление комментария
+app.post('/comments', commentController.addComment);
 // Запуск
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

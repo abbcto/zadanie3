@@ -12,21 +12,35 @@ exports.showMainPage = async (req, res) => {
 };
 
 exports.showSingleArticle = async (req, res) => {
-  const articleId = req.params.id;
-  try {
-    const result = await db.query(
-      'SELECT * FROM articles WHERE id = $1',
-      [articleId]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).send('Статья не найдена');
+    const articleId = req.params.id;
+    try {
+      // 1) Статья
+      const artQ = await db.query(
+        'SELECT * FROM articles WHERE id = $1',
+        [articleId]
+      );
+      if (!artQ.rows.length) {
+        return res.status(404).send('Статья не найдена');
+      }
+      const article = artQ.rows[0];
+  
+      // 2) Комментарии к статье
+      const commQ = await db.query(
+        `SELECT id, author, body, created_at
+         FROM comments
+         WHERE article_id = $1
+         ORDER BY id DESC`,
+        [articleId]
+      );
+      const comments = commQ.rows;
+  
+      res.render('single_article', { article, comments });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Ошибка при получении статьи или комментариев');
     }
-    res.render('single_article', { article: result.rows[0] });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Ошибка при получении статьи');
-  }
-};
+  };
+  
 
 exports.showEditArticle = async (req, res) => {
   const articleId = req.params.id;
